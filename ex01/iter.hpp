@@ -3,9 +3,9 @@
 
 #include <iostream>
 
-template <typename TR, typename TL, typename TF>
-void iter(TR *array, TL length, TF func){
-	for(TL i = 0; i < length; i++){
+template <typename TR, typename TF>
+void iter(TR *array, const size_t length, TF func){
+	for(size_t i = 0; i < length; i++){
 		func(array[i]);
 	}
 }
