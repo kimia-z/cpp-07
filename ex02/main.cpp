@@ -1,58 +1,124 @@
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include "Array.hpp"
 #include "Array.tpp"
 
-#define MAX_VAL 2
-int main(int, char**)
+#define MAX_VAL 5
+
+static void fillArrays(Array<int>& arr, int* mirror)
 {
-	Array<int> numbers(MAX_VAL);
-	int* mirror = new int[MAX_VAL];
-	srand(time(NULL));
 	for (int i = 0; i < MAX_VAL; i++)
 	{
-		const int value = rand();
-		numbers[i] = value;
+		int value = rand();
+		arr[i] = value;
 		mirror[i] = value;
 	}
-	//SCOPE
+}
+
+static bool compareArrays(Array<int>& arr, const int* mirror)
+{
+	for (int i = 0; i < MAX_VAL; i++)
 	{
-		Array<int> tmp = numbers;
-		//Test??
-		Array<int> test(tmp);
-		//Test??
+		if (arr[i] != mirror[i])
+			return false;
 	}
+	return true;
+}
+
+static void printArrays(Array<int>& arr, const int* mirror)
+{
+	for (int i = 0; i < MAX_VAL; i++)
+	{
+		std::cout << "mirror[" << i << "] = " << mirror[i] << std::endl;
+		std::cout << "Array [" << i << "] = " << arr[i] << std::endl;
+	}
+}
+
+static bool testCopyConstructor(Array<int>& original)
+{
+	Array<int> copy(original);
 
 	for (int i = 0; i < MAX_VAL; i++)
 	{
-		if (mirror[i] != numbers[i])
+		if (copy[i] != original[i])
+			return false;
+	}
+
+	copy[0] = 42;
+	return (original[0] != 42);
+}
+
+static bool testCopyAssignment(Array<int>& source)
+{
+	Array<int> assigned;
+	assigned = source;
+
+	for (int i = 0; i < MAX_VAL; i++)
+	{
+		if (assigned[i] != source[i])
+			return false;
+	}
+
+	assigned[0] = 99;
+	return (source[0] != 99);
+}
+
+int main()
+{
+	srand(time(NULL));
+
+	Array<int> numbers(MAX_VAL);
+	int* mirror = new int[MAX_VAL];
+
+	fillArrays(numbers, mirror);
+
+	// Copy tests (constructor + assignment)
+	{
+		if (!testCopyConstructor(numbers))
 		{
-			std::cerr << "didn't save the same value!!" << std::endl;
+			std::cerr << "Copy constructor test failed!" << std::endl;
+			delete [] mirror;
 			return 1;
 		}
-		std::cout << "Array[" << i << "] = " << mirror[i] << std::endl;
-		std::cout << "in class Array[" << i << "] = " << numbers[i] << std::endl;
+
+		if (!testCopyAssignment(numbers))
+		{
+			std::cerr << "Copy assignment test failed!" << std::endl;
+			delete [] mirror;
+			return 1;
+		}
 	}
+
+	// Value consistency test
+	if (!compareArrays(numbers, mirror))
+	{
+		std::cerr << "Values not preserved!" << std::endl;
+		delete [] mirror;
+		return 1;
+	}
+
+	printArrays(numbers, mirror);
+
+	// Out of range tests
 	try
 	{
-		numbers[-2] = 0;
+		numbers[-1] = 0;
 	}
-	catch(const std::exception& e)
+	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << e.what() << std::endl;
 	}
+
 	try
 	{
 		numbers[MAX_VAL] = 0;
 	}
-	catch(const std::exception& e)
+	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << e.what() << std::endl;
 	}
 
-	for (int i = 0; i < MAX_VAL; i++)
-	{
-		numbers[i] = rand();
-	}
 	delete [] mirror;
 	return 0;
 }
